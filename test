@@ -1,0 +1,217 @@
+export class equations_2d {
+  constructor ( x1, y1, x2, y2 ) {
+    this.point1 = { x: x1, y: y1};
+    this.point2 = { x: x2, y: y2};
+  };
+
+  slope() {
+      // y2 – y1 = m (x2 – x1)
+
+      return ( this.point2.y - this.point1.y ) / ( this.point2.x - this.point1.x );
+          
+  };
+
+  lin () {
+      // y2 = m.x2 - m.x1 + y1
+      return - this.slope() * this.point1.x + this.point1.y;
+  };
+
+  formation () {
+      var sign = '';
+      const Lin = this.lin ();
+      const m = this.slope ();
+      
+      if ( Lin > 0) {
+          sign = '+ ';     
+      } else if ( Lin < 0) {
+          sign = '- ';
+      }
+      return 'f(x) = ' + m + 'x ' + sign + Math.abs(Lin).toString()
+  };
+
+  point ( x ) {
+      //Another point on the same line, starting from the x coordinate
+      return { x: x, y: this.slope()*x + this.lin () };   
+  };
+
+  distance() {
+    const dx = this.point1.x - this.point2.x, dy = this.point1.y - this.point2.y;
+    return  Math.sqrt( dx*dx + dy*dy );
+  };
+
+  xnewdistance( d, x ) {
+
+    const a = this.slope();
+
+    return {
+      x1: ( ( 2 * x ) + ( 2 * a * a * x ) + Math.sqrt( 4 * d * d * ( 1 + ( a * a ) ) ) ) / ( 2 * ( 1 + ( a * a ) ) ),
+    
+      x2: ( ( 2 * x ) + ( 2 * a * a * x ) - Math.sqrt( 4 * d * d * ( 1 + ( a * a ) ) ) ) / ( 2 * ( 1 + ( a * a ) ) ),
+    
+    };
+  }
+
+  pointdistancefrompoint1( nd ) {
+    // Retorna um ponto a uma certa distancia do ponto dois, sendo o ponto mais distante possivel do ponto um.
+    // Returns a point at a certain distance from point two, the point being as far away from point one as possible.
+
+    const newx = this.xnewdistance( nd, this.point1.x );
+    
+    const newpoint1 = this.point( newx.x1 );
+    const line1 = new equations_2d( this.point2.x, this.point2.y, newpoint1.x, newpoint1.y);
+
+    const newpoint2 = this.point( newx.x2 );
+    const line2 = new equations_2d( this.point2.x, this.point2.y, newpoint2.x, newpoint2.y);
+
+    if (line2.distance() > line1.distance()) {
+
+      return { x: newpoint2.x, y: newpoint2.y };
+    
+    } else {
+      
+      return { x: newpoint1.x, y: newpoint1.y };
+    };   
+  };
+
+  pointdistancefrompoint2( nd ) {
+    // Retorna um ponto a uma certa distancia do ponto dois, sendo o ponto mais distante possivel do ponto um.
+    // Returns a point at a certain distance from point two, the point being as far away from point one as possible.
+
+    const newx = this.xnewdistance( nd, this.point2.x );
+    
+    const newpoint1 = this.point( newx.x1 );
+    const line1 = new equations_2d( this.point1.x, this.point1.y, newpoint1.x, newpoint1.y);
+
+    const newpoint2 = this.point( newx.x2 );
+    const line2 = new equations_2d( this.point1.x, this.point1.y, newpoint2.x, newpoint2.y);
+
+    if (line2.distance() > line1.distance()) {
+
+      return { x: newpoint2.x, y: newpoint2.y };
+    
+    } else {
+      
+      return { x: newpoint1.x, y: newpoint1.y };
+    };
+  };
+};
+
+export class equations_3d {
+  constructor ( x1, y1, z1, x2, y2, z2 ) {
+    this.point1 = { x: x1, y: y1, z: z1 };
+    this.point2 = { x: x2, y: y2, z: z2 };
+  };
+
+  vector() {
+      // this.point2 - this.point1)
+
+      return { a: this.point2.x - this.point1.x, b: this.point2.y - this.point1.y, c: this.point2.z - this.point1.z };
+
+  };
+
+  point ( t ) {
+      // x = x1 + ta; y = y1 + tb; z = z1 + tc
+      //Another point on the same line, starting from the x coordinate
+      
+      const vector = this.vector();
+      
+      return { x: this.point1.x + ( t * vector.a ), y: this.point1.y + ( t * vector.b ), z: this.point1.z + ( t * vector.c ) };   
+  };
+
+  distance() {
+    const dx = this.point1.x - this.point2.x, dy = this.point1.y - this.point2.y, dz = this.point1.z - this.point2.z;
+    return  Math.sqrt( dx*dx + dy*dy + dz*dz );
+  };
+
+
+  xproportion( nd ) {
+    // vx = x variation; x2 - x1
+    // (d/nd) = (vx/nvx)
+    // nvx = nd * vx / d
+    return ( nd * ( Math.abs( this.point2.x - this.point1.x ) ) ) / this.distance()
+  };
+
+  tnewdistance( d, v ) {
+    /*
+    x = x0 + at
+    y = y0 + bt
+    z = z0 + ct
+
+    d² = ( x2 - x1 )² + ( y2 - y1 )² + ( z2 - z1 )²
+
+    ( a² + b² + c² ) * t² +   ( - 2 * ( a * ( x2 - x0 ) + b * ( y2 - y0 ) + c * ( z2 - z0 ) ) ) * t + ( ( x2 - x0 )² + ( y2 - y0 )² + ( z2 - z0 )²  - d2) = 0
+  
+    Delta = B² - 4AC
+  
+    A = a² + b² + c²
+    B = - 2 * ( a * ( x2 - x0 ) + b * ( y2 - y0 ) + c * ( z2 - z0 ) )
+    C = ( x2 - x0 )² + ( y2 - y0 )² + ( z2 - z0 )²  - d²
+
+    */
+    
+    const vector = this.vector();
+
+    const x0 = this.point1.x, y0 = this.point1.y, z0 = this.point1.z;
+    
+    const a = vector.a, b = vector.b, c = vector.c;
+
+    const x2 = v.x, y2 = v.y, z2 = v.z;
+
+    const vx = x2 - x0, vy = y2 - y0, vz = z2 - z0;
+
+    const A = ( a * a ) + ( b * b ) + ( c * c );
+    const B = - 2 * ( a * vx + b * vy + c * vz );
+    const C = ( vx * vx ) + ( vy * vy ) + ( vz * vz ) - ( d * d );
+
+    const Delta = ( B * B ) - ( 4 * A * C );
+
+    return {
+      t1: ( - B + Math.sqrt( Delta ) ) / ( 2 * A ),
+      t2: ( - B - Math.sqrt( Delta ) ) / ( 2 * A ),
+    };
+  };
+
+  pointdistancefrompoint2( nd ) {
+    // Retorna um ponto a uma certa distancia do ponto dois, sendo o ponto mais distante possivel do ponto um.
+    // Returns a point at a certain distance from point two, the point being as far away from point one as possible.
+ 
+    const newt = this.tnewdistance( nd, this.point2 );
+
+    const npoint1 = this.point( newt.t1 );
+    const points1 = new equations_3d( this.point1.x, this.point1.y, this.point1.z, npoint1.x, npoint1.y, npoint1.z );
+
+    const npoint2 = this.point( newt.t2 );
+    const points2 = new equations_3d( this.point1.x, this.point1.y, this.point1.z, npoint2.x, npoint2.y, npoint2.z );
+
+    if ( points2.distance() > points1.distance() ) {
+
+      return { x: npoint2.x, y: npoint2.y, z: npoint2.z };
+    
+    } else {
+      
+      return { x: npoint1.x, y: npoint1.y, z: npoint1.z };
+    };
+  };
+
+  pointdistancefrompoint1( nd ) {
+    // Retorna um ponto a uma certa distancia do ponto um, sendo o ponto mais distante possivel do ponto dois.
+    // Returns a point at a certain distance from point one, the point being as far away as possible from point two.
+    
+    const newt = this.tnewdistance( nd, this.point1 );
+
+    const distance1 = this.point( newt.t1 );
+    const point1 = new equations_3d( this.point2.x, this.point2.y, this.point2.z, distance1.x, distance1.y, distance1.z );
+
+    const distance2 = this.point( newt.t2 );
+    const point2 = new equations_3d( this.point2.x, this.point2.y, this.point2.z, distance2.x, distance2.y, distance2.z );
+
+    if (point2.distance() > point1.distance()) {
+
+      return { x: distance2.x, y: distance2.y, z: distance2.z };
+    
+    } else {
+      
+      return { x: distance1.x, y: distance1.y, z: distance1.z };
+    };
+  };
+};
